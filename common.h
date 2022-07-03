@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/* protocol enumeration */
 enum{
     REQADD = 1,
     REQREM,
@@ -21,6 +22,7 @@ enum{
     OK,
 };
 
+/* error enumeration */
 enum{
     NOTFOUND = 1,
     SNOTFOUND,
@@ -28,7 +30,6 @@ enum{
     LIMITEXCEEDED,
 };
 
-void validadeArguments(int argc, int minArgs);
 int buildUDPunicast(int port);
 int buildUDPbroadcast(int port);
 

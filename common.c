@@ -1,10 +1,6 @@
 #include "common.h"
 
-void validadeArguments(int argc, int minArgs)
-{
-    if (argc < minArgs) exit(-1);
-}
-
+/* creating sockets */
 int buildUDPunicast(int port)
 {
     int sock;
@@ -25,6 +21,7 @@ int buildUDPunicast(int port)
     return sock;
 }
 
+/* creating sockets for broadcast communication*/
 int buildUDPbroadcast(int port)
 {
     int sock;
@@ -45,6 +42,7 @@ int buildUDPbroadcast(int port)
     return sock;
 }
 
+/* retrieving message type from string */
 int getMessageType(char *message)
 {
     char* flag = strtok(message, " ");

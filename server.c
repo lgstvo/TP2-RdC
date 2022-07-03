@@ -27,6 +27,9 @@ struct ThreadArguments
     struct sockaddr_in clientConnection;
 };
 
+/* if instanse of message is zero,
+the if statement is going to be false,
+so it is not included in the message string. */
 void buildMessage(char *buffer, int id, int source, int destination, int payload)
 {
     memset(buffer, 0, 100);
@@ -54,6 +57,9 @@ void buildMessage(char *buffer, int id, int source, int destination, int payload
     strcat(buffer, "\n");
 }
 
+/* Function used for adding equipments.
+After adding equipment and displaying to the user,
+the function broadcast the response to all connections. */
 void processREQADD(char *response, struct sockaddr_in connection)
 {
     int flag = 0;
@@ -95,6 +101,9 @@ void processREQADD(char *response, struct sockaddr_in connection)
     }
 }
 
+/* Function used for removing equipments.
+After removing equipment and displaying to the user,
+the function broadcast the response to all connections. */
 void processREQREM(char *response, struct sockaddr_in connection)
 {
     char *idMsgString = strtok(NULL, " ");
@@ -134,6 +143,9 @@ void processREQREM(char *response, struct sockaddr_in connection)
         exit(-1);
 }
 
+/* Function for retrieving information and responding information.
+This is a double function because REQINF and RESINF has the same
+behaviour regarding the server side. */
 void processREQINF_RESINF(char *message, char *response, struct sockaddr_in connection)
 {
     char message_copy[100];
@@ -184,6 +196,9 @@ void processREQINF_RESINF(char *message, char *response, struct sockaddr_in conn
     }
 }
 
+/* Switch function responsible for protocol logic.
+Each case is a protocol message that is responsability
+of the server. */
 void unicastCommandSwitch(int messageType, char *message, char *response, struct sockaddr_in connection)
 {
     switch (messageType)
@@ -203,6 +218,7 @@ void unicastCommandSwitch(int messageType, char *message, char *response, struct
     }
 }
 
+/* continuous thread function responsible for recieving messages and taking actions */
 void *unicastThread(void *args)
 {
     struct ThreadArguments *threadArgs = (struct ThreadArguments *)args;
