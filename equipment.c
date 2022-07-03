@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include "common.h"
 
+/* GLOBALS */
 int eqID = 0;
 int equipments[15];
 int clientSocket, clientBroadcastSocket;
@@ -18,6 +19,7 @@ struct ThreadArguments
     struct sockaddr_in serverAddr;
 };
 
+/* */
 void sendREQADD(struct sockaddr_in serverAddr)
 {
     char buffer[BUFFER_SIZE] = "1";

@@ -27,9 +27,8 @@ struct ThreadArguments
     struct sockaddr_in clientConnection;
 };
 
-/* if instanse of message is zero,
-the if statement is going to be false,
-so it is not included in the message string. */
+/* se a fração da mensagem for zero,
+o if vai ser falso e o pedaço não entra na string */
 void buildMessage(char *buffer, int id, int source, int destination, int payload)
 {
     memset(buffer, 0, 100);
@@ -57,9 +56,9 @@ void buildMessage(char *buffer, int id, int source, int destination, int payload
     strcat(buffer, "\n");
 }
 
-/* Function used for adding equipments.
-After adding equipment and displaying to the user,
-the function broadcast the response to all connections. */
+/* Adicionar equipamentos.
+Após adicionar o equipamento e mostrar para o usuário,
+a função faz o broadcast da resposta para todos os equipamentos. */
 void processREQADD(char *response, struct sockaddr_in connection)
 {
     int flag = 0;
@@ -101,9 +100,9 @@ void processREQADD(char *response, struct sockaddr_in connection)
     }
 }
 
-/* Function used for removing equipments.
-After removing equipment and displaying to the user,
-the function broadcast the response to all connections. */
+/* Remover equipamentos.
+Após remover o equipamento e mostrar para o usuário,
+a função faz o broadcast da resposta para todos os equipamentos. */
 void processREQREM(char *response, struct sockaddr_in connection)
 {
     char *idMsgString = strtok(NULL, " ");
@@ -143,9 +142,9 @@ void processREQREM(char *response, struct sockaddr_in connection)
         exit(-1);
 }
 
-/* Function for retrieving information and responding information.
-This is a double function because REQINF and RESINF has the same
-behaviour regarding the server side. */
+/* Função para request e respond de informação.
+É uma função dupla pois, para o servidor,
+esses comandos possuem o mesmo funcionamento. */
 void processREQINF_RESINF(char *message, char *response, struct sockaddr_in connection)
 {
     char message_copy[100];
@@ -196,9 +195,9 @@ void processREQINF_RESINF(char *message, char *response, struct sockaddr_in conn
     }
 }
 
-/* Switch function responsible for protocol logic.
-Each case is a protocol message that is responsability
-of the server. */
+/* Função de switch responsável pela lógica do protocolo.
+Cada caso é um comando que é responsabilidade
+do servidor. */
 void unicastCommandSwitch(int messageType, char *message, char *response, struct sockaddr_in connection)
 {
     switch (messageType)
@@ -218,7 +217,7 @@ void unicastCommandSwitch(int messageType, char *message, char *response, struct
     }
 }
 
-/* continuous thread function responsible for recieving messages and taking actions */
+/* Função de thread contínua responsável por receber mensagens e executar ações chamado o switch. */
 void *unicastThread(void *args)
 {
     struct ThreadArguments *threadArgs = (struct ThreadArguments *)args;
