@@ -28,6 +28,13 @@ enum{
     OK,
 };
 
+enum{
+    NOTFOUND = 1,
+    SNOTFOUND,
+    TNOTFOUND,
+    LIMITEXCEEDED,
+};
+
 void validadeArguments(int argc, int minArgs);
 int buildUDPunicast(int port);
 int buildUDPbroadcast(int port);

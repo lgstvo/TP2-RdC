@@ -217,7 +217,6 @@ void *unicastThread(void *args)
         int messageType = getMessageType(buffer_copy);
 
         unicastCommandSwitch(messageType, buffer, response, threadArgs->clientCon);
-        printf("%d\n", messageType);
     }
 }
 
