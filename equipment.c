@@ -349,21 +349,18 @@ int main(int argc, char const *argv[])
 
     sendREQADD(serverAddr);
 
-    
     struct sockaddr_in broadcastServerAddr;
     broadcastServerAddr.sin_family = AF_INET;
     broadcastServerAddr.sin_port = htons(7777);
     broadcastServerAddr.sin_addr.s_addr = inet_addr(serverIP);
     
-
     pthread_t receiveThread;
     struct ThreadArguments *receiveThreadArgs = (struct ThreadArguments *)malloc(sizeof(struct ThreadArguments));
     receiveThreadArgs->serverAddr = serverAddr;
     int receiveThreadStatus = pthread_create(&receiveThread, NULL, readThread, (void *)receiveThreadArgs);
     if (receiveThreadStatus != 0)
         exit(-1);
-
-    
+        
     pthread_t receiveBroadcastThread;
     struct ThreadArguments *receiveBroadcastThreadArgs = (struct ThreadArguments *)malloc(sizeof(struct ThreadArguments));
     receiveBroadcastThreadArgs->serverAddr = broadcastServerAddr;
