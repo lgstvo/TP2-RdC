@@ -57,10 +57,12 @@ void buildMessage(char *buffer, int id, int source, int destination, int payload
 
 void processREQADD(char *response, struct sockaddr_in connection)
 {
+    int flag = 0;
     if (numberOfClients == MAX_CLIENTS)
         buildMessage(response, 7, 0, 0, 4);
     else
     {
+        flag = 1;
         equipmentsIds[numberOfClients] = equipmentIdCounter;
         equipmentsAdresses[numberOfClients] = connection;
         numberOfClients++;
@@ -71,7 +73,28 @@ void processREQADD(char *response, struct sockaddr_in connection)
     }
     int bytesSent = sendto(Socket, response, strlen(response), 0, (struct sockaddr *)&connection, clientLen);
     if (bytesSent < 1)
+    {
         exit(-1);
+    }
+    if(flag)
+    {
+        char msg[100] = "4 ";
+        for(int i = 0; i < 15; i++)
+        {
+            if(equipmentsIds[i])
+            {
+                char idstr[100] = "";
+                sprintf(idstr, "%d ", equipmentsIds[i]);
+                strcat(msg, idstr);
+            }
+        }
+        strcat(msg, "\n");
+        int bytesSent = sendto(Socket, msg, strlen(msg), 0, (struct sockaddr *)&connection, clientLen);
+        if (bytesSent < 1)
+        {
+            exit(-1);
+        }
+    }
 }
 
 void processREQREM(char *response, struct sockaddr_in connection)
