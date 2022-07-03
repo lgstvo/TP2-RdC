@@ -242,6 +242,73 @@ void *readThread(void *args)
     }
 }
 
+void processBroadcastRESADD()
+{
+    char *aux = strtok(NULL, " ");
+    if(aux == NULL)
+        return;
+    equipmentId = atoi(aux);
+    for(int i = 0; i < 15; i++)
+    {
+        if(equipments[i] == equipmentId)
+            return;
+        if(equipments[i] == 0)
+        {
+            equipments[i] = equipmentId;
+            printf("Equipment %d added\n", equipmentId);
+            return;
+        }
+    }
+}
+
+void processBreadcastREQREM()
+{
+    char *aux = strtok(NULL, " ");
+    if(aux == NULL)
+        return;
+    equipmentId = atoi(aux);
+    for(int i = 0; i < 15; i++)
+    {
+        if(equipments[i] == equipmentId)
+        {
+            equipments[i] = 0;
+            printf("Equipment %d removed\n", equipmentId);
+            return;
+        }
+    }
+}
+
+void commandBroadcastSwitch(int messageType)
+{
+    switch (messageType)
+    {
+        case RESADD:
+            processBroadcastRESADD();
+            break;
+        case REQREM:
+            processBreadcastREQREM();
+            break;
+    }
+}
+
+void *readBroadcastThread(void *args)
+{
+    struct ThreadArgs *threadArgs = (struct ThreadArgs *)args;
+    char buffer[100] = "";
+    while(1)
+    {
+        memset(buffer, 0, sizeof(buffer));
+        int bytesReceived = recvfrom(clientBroadcastSock, buffer, BUFFER_SIZE_BYTES, 0, (struct sockaddr *)&threadArgs->serverAddr, &clientLen);
+        if (bytesReceived < 1)
+            exit(-1);
+        char buffer_copy[100];
+        strcpy(buffer_copy, buffer);
+        int messageType = getMessageType(buffer_copy);
+        //printf("%s\n", buffer_copy);
+        commandBroadcastSwitch(messageType);
+    }
+}
+
 int main(int argc, char const *argv[])
 {
     srand(time(0));
@@ -276,13 +343,12 @@ int main(int argc, char const *argv[])
     if (receiveThreadStatus != 0)
         exit(-1);
 
-    /*
+    
     pthread_t receiveBroadcastThread;
     struct ThreadArgs *receiveBroadcastThreadArgs = (struct ThreadArgs *)malloc(sizeof(struct ThreadArgs));
     receiveBroadcastThreadArgs->serverAddr = broadcastServerAddr;
-    int receiveBroadcastThreadStatus = pthread_create(&receiveBroadcastThread, NULL, ReceiveBroadcastThread, (void *)receiveBroadcastThreadArgs);
+    int receiveBroadcastThreadStatus = pthread_create(&receiveBroadcastThread, NULL, readBroadcastThread, (void *)receiveBroadcastThreadArgs);
     if (receiveBroadcastThreadStatus != 0) exit(-1);
-    */
 
     pthread_t sendThread;
     struct ThreadArgs *sendThreadArgs = (struct ThreadArgs *)malloc(sizeof(struct ThreadArgs));
