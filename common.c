@@ -1,6 +1,6 @@
 #include "common.h"
 
-/* creating sockets */
+/* sockets */
 int buildUDPunicast(int port)
 {
     int sock;
@@ -21,7 +21,7 @@ int buildUDPunicast(int port)
     return sock;
 }
 
-/* creating sockets for broadcast communication*/
+/* sockets de broadcast */
 int buildUDPbroadcast(int port)
 {
     int sock;
@@ -42,7 +42,7 @@ int buildUDPbroadcast(int port)
     return sock;
 }
 
-/* retrieving message type from string */
+/* recuperando mensagem da string */
 int getMessageType(char *message)
 {
     char* flag = strtok(message, " ");

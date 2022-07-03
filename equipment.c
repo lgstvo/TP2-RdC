@@ -19,7 +19,7 @@ struct ThreadArguments
     struct sockaddr_in serverAddr;
 };
 
-/* */
+/* envia a mensagem de adicionar equipamento */
 void sendREQADD(struct sockaddr_in serverAddr)
 {
     char buffer[BUFFER_SIZE] = "1";
@@ -28,6 +28,7 @@ void sendREQADD(struct sockaddr_in serverAddr)
         exit(-1);
 }
 
+/* envia a mensagem de fechar conexão (ou remover equipamento). */
 void sendCLOSECONNECTION(struct sockaddr_in serverAddr)
 {
     char buffer[BUFFER_SIZE];
@@ -37,6 +38,7 @@ void sendCLOSECONNECTION(struct sockaddr_in serverAddr)
         exit(-1);
 }
 
+/* envia a mensagem para requisitar informação. */
 void sendREQINF(struct sockaddr_in serverAddr, int destinationID)
 {
     char buffer[BUFFER_SIZE];
@@ -46,6 +48,7 @@ void sendREQINF(struct sockaddr_in serverAddr, int destinationID)
         exit(-1);
 }
 
+/* lista os equipamentos */
 void listEquipment()
 {
     for(int i = 0; i < 15; i++)
@@ -56,6 +59,7 @@ void listEquipment()
     printf("\n");
 }
 
+/* função para ler do terminal de forma contínua */
 int nonBlockRead(char *message)
 {
     struct timeval tv;
@@ -76,6 +80,7 @@ int nonBlockRead(char *message)
     return 0;
 }
 
+/* thread do equipamento para processar comandos que vem do teclado. */
 void *readInputThread(void *args)
 {
     struct ThreadArguments *threadArgs = (struct ThreadArguments *)args;
@@ -116,6 +121,7 @@ void *readInputThread(void *args)
     return NULL;
 }
 
+/* responder o comando de adicionar equipamento. */
 void processRESADD()
 {
     char *aux = strtok(NULL, " ");
@@ -125,6 +131,7 @@ void processRESADD()
     printf("New ID: %d\n", eqID);
 }
 
+/* responder a lista de equipamentos. */
 void processRESLIST()
 {
     int i = 0;
@@ -136,6 +143,7 @@ void processRESLIST()
     }
 }
 
+/* processar request de informação. */
 void processREQINF(struct sockaddr_in serverAddr)
 {
     char* aux;
@@ -160,6 +168,7 @@ void processREQINF(struct sockaddr_in serverAddr)
     
 }
 
+/* processar resposta de informação */
 void processRESINF()
 {
     char* aux;
@@ -173,6 +182,7 @@ void processRESINF()
     printf("Value from %d: %s\n", originID, payload);
 }
 
+/* processar erros */
 void processERROR()
 {
     char* aux = strtok(NULL, " ");
@@ -196,12 +206,15 @@ void processERROR()
     }
 }
 
+/* ok */
 void processOK()
 {
     printf("Successful removal\n");
     exit(0);
 }
 
+/* switch responsável pela lógica do protocolo que é responsabilidade do
+equipamento. */
 void commandSwitch(int messageType, struct sockaddr_in serverAddr)
 {
     switch (messageType)
@@ -227,6 +240,7 @@ void commandSwitch(int messageType, struct sockaddr_in serverAddr)
     }
 }
 
+/* thread responsável pelos comandos enviados do servidor. */
 void *readThread(void *args)
 {
     struct ThreadArguments *threadArgs = (struct ThreadArguments *)args;
@@ -244,6 +258,7 @@ void *readThread(void *args)
     }
 }
 
+/* processamento da resposta do RES_ADD que é enviado por broadcast */
 void processBroadcastRESADD()
 {
     char *aux = strtok(NULL, " ");
@@ -263,6 +278,7 @@ void processBroadcastRESADD()
     }
 }
 
+/* processamento da resposta do REQ_REM que é enviado por broadcast */
 void processBreadcastREQREM()
 {
     char *aux = strtok(NULL, " ");
@@ -280,6 +296,7 @@ void processBreadcastREQREM()
     }
 }
 
+/* switch responsável pela lógica das tarefas responsáveis do broadcast */
 void commandBroadcastSwitch(int messageType)
 {
     switch (messageType)
@@ -293,6 +310,7 @@ void commandBroadcastSwitch(int messageType)
     }
 }
 
+/* thread de leitura das mensagens enviadas por broadcast */
 void *readBroadcastThread(void *args)
 {
     struct ThreadArguments *threadArgs = (struct ThreadArguments *)args;
