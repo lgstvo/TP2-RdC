@@ -73,9 +73,10 @@ void processREQADD(char *response, struct sockaddr_in connection)
     }
     int bytesSent = sendto(Socket, response, strlen(response), 0, (struct sockaddr *)&connection, clientLen);
     if (bytesSent < 1)
-    {
         exit(-1);
-    }
+    bytesSent = sendto(broadcastSocket, response, strlen(response), 0, (struct sockaddr *)&broadcastAddr, clientLen);
+    if (bytesSent < 1)
+        exit(-1);
     if(flag)
     {
         char msg[100] = "4 ";
@@ -91,9 +92,7 @@ void processREQADD(char *response, struct sockaddr_in connection)
         strcat(msg, "\n");
         int bytesSent = sendto(Socket, msg, strlen(msg), 0, (struct sockaddr *)&connection, clientLen);
         if (bytesSent < 1)
-        {
             exit(-1);
-        }
     }
 }
 
@@ -128,6 +127,10 @@ void processREQREM(char *response, struct sockaddr_in connection)
         printf("Equipment %d removed\n", idMsg);
     }
     int bytesSent = sendto(Socket, response, strlen(response), 0, (struct sockaddr *)&connection, clientLen);
+    if (bytesSent < 1)
+        exit(-1);
+    buildMessage(response, 2, idMsg, 0, 0);
+    bytesSent = sendto(broadcastSocket, response, strlen(response), 0, (struct sockaddr *)&broadcastAddr, clientLen);
     if (bytesSent < 1)
         exit(-1);
 }
@@ -229,6 +232,10 @@ int main(int argc, char const *argv[])
     char *port = strdup(argv[1]);
     int portNumber = atoi(port);
     Socket = buildUDPunicast(portNumber);
+    broadcastSocket = buildUDPbroadcast(0);
+    broadcastAddr.sin_family = AF_INET;
+    broadcastAddr.sin_port = htons((in_port_t)(7777));
+    broadcastAddr.sin_addr.s_addr = INADDR_BROADCAST;
 
     struct ThreadArgs *threadArgs = (struct ThreadArgs *)malloc(sizeof(struct ThreadArgs));
     threadArgs->clientLen = ADDR_LEN;

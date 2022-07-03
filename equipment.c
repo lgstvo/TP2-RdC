@@ -253,7 +253,7 @@ int main(int argc, char const *argv[])
     char *serverPort = strdup(argv[2]);
     int serverPortNumber = atoi(serverPort);
     clientSock = buildUDPunicast(0);
-    // clientBroadcastSock = buildUDPunicast(serverPortNumber + 1);
+    clientBroadcastSock = buildUDPunicast(7777);
 
     struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
@@ -262,14 +262,12 @@ int main(int argc, char const *argv[])
 
     sendREQADD(serverAddr);
 
-    /*
+    
     struct sockaddr_in broadcastServerAddr;
     broadcastServerAddr.sin_family = AF_INET;
-    broadcastServerAddr.sin_port = htons(serverPortNumber + 1);
+    broadcastServerAddr.sin_port = htons(7777);
     broadcastServerAddr.sin_addr.s_addr = inet_addr(serverIP);
-
-    RequestAdd(serverAddr);
-    */
+    
 
     pthread_t receiveThread;
     struct ThreadArgs *receiveThreadArgs = (struct ThreadArgs *)malloc(sizeof(struct ThreadArgs));
