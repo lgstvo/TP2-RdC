@@ -8,38 +8,38 @@
 #include <sys/time.h>
 #include "common.h"
 
-int equipmentId = 0;
+int eqID = 0;
 int equipments[15];
-int clientSock, clientBroadcastSock;
-socklen_t clientLen = sizeof(struct sockaddr_in);
+int clientSocket, clientBroadcastSocket;
+socklen_t clientLength = sizeof(struct sockaddr_in);
 
-struct ThreadArgs
+struct ThreadArguments
 {
     struct sockaddr_in serverAddr;
 };
 
 void sendREQADD(struct sockaddr_in serverAddr)
 {
-    char buffer[100] = "1";
-    int bytesSent = sendto(clientSock, buffer, strlen(buffer), 0, (struct sockaddr *)&serverAddr, clientLen);
+    char buffer[BUFFER_SIZE] = "1";
+    int bytesSent = sendto(clientSocket, buffer, strlen(buffer), 0, (struct sockaddr *)&serverAddr, clientLength);
     if (bytesSent < 1)
         exit(-1);
 }
 
 void sendCLOSECONNECTION(struct sockaddr_in serverAddr)
 {
-    char buffer[100];
-    sprintf(buffer, "2 %d\n", equipmentId);
-    int bytesSent = sendto(clientSock, buffer, strlen(buffer), 0, (struct sockaddr *)&serverAddr, clientLen);
+    char buffer[BUFFER_SIZE];
+    sprintf(buffer, "2 %d\n", eqID);
+    int bytesSent = sendto(clientSocket, buffer, strlen(buffer), 0, (struct sockaddr *)&serverAddr, clientLength);
     if (bytesSent < 1)
         exit(-1);
 }
 
 void sendREQINF(struct sockaddr_in serverAddr, int destinationID)
 {
-    char buffer[100];
-    sprintf(buffer, "5 %d %d\n", equipmentId, destinationID);
-    int bytesSent = sendto(clientSock, buffer, strlen(buffer), 0, (struct sockaddr *)&serverAddr, clientLen);
+    char buffer[BUFFER_SIZE];
+    sprintf(buffer, "5 %d %d\n", eqID, destinationID);
+    int bytesSent = sendto(clientSocket, buffer, strlen(buffer), 0, (struct sockaddr *)&serverAddr, clientLength);
     if (bytesSent < 1)
         exit(-1);
 }
@@ -66,7 +66,7 @@ int nonBlockRead(char *message)
     select(2, &readfds, NULL, NULL, &tv);
     if (FD_ISSET(1, &readfds))
     {
-        read(1, message, BUFFER_SIZE_BYTES - 1);
+        read(1, message, BUFFER_SIZE - 1);
         return 1;
     }
     else
@@ -76,8 +76,8 @@ int nonBlockRead(char *message)
 
 void *readInputThread(void *args)
 {
-    struct ThreadArgs *threadArgs = (struct ThreadArgs *)args;
-    char buffer[100] = "";
+    struct ThreadArguments *threadArgs = (struct ThreadArguments *)args;
+    char buffer[BUFFER_SIZE] = "";
 
     while (1)
     {
@@ -106,7 +106,7 @@ void *readInputThread(void *args)
                 sendREQINF(threadArgs->serverAddr, destID);
             }
 
-            int bytesSent = sendto(clientSock, buffer, strlen(buffer), 0, (struct sockaddr *)&threadArgs->serverAddr, clientLen);
+            int bytesSent = sendto(clientSocket, buffer, strlen(buffer), 0, (struct sockaddr *)&threadArgs->serverAddr, clientLength);
             if (bytesSent < 1)
                 exit(-1);
         }
@@ -119,8 +119,8 @@ void processRESADD()
     char *aux = strtok(NULL, " ");
     if(aux == NULL)
         return;
-    equipmentId = atoi(aux);
-    printf("New ID: %d\n", equipmentId);
+    eqID = atoi(aux);
+    printf("New ID: %d\n", eqID);
 }
 
 void processRESLIST()
@@ -152,7 +152,7 @@ void processREQINF(struct sockaddr_in serverAddr)
     sprintf(main_buffer, "%s%d.%d%d\n", buffer, rand() % 9, rand() % 9, rand() % 9);
     printf("requested information\n");
 
-    int bytesSent = sendto(clientSock, main_buffer, strlen(main_buffer), 0, (struct sockaddr *)&serverAddr, clientLen);
+    int bytesSent = sendto(clientSocket, main_buffer, strlen(main_buffer), 0, (struct sockaddr *)&serverAddr, clientLength);
     if (bytesSent < 1)
         exit(-1);
     
@@ -227,12 +227,12 @@ void commandSwitch(int messageType, struct sockaddr_in serverAddr)
 
 void *readThread(void *args)
 {
-    struct ThreadArgs *threadArgs = (struct ThreadArgs *)args;
-    char buffer[100] = "";
+    struct ThreadArguments *threadArgs = (struct ThreadArguments *)args;
+    char buffer[BUFFER_SIZE] = "";
     while(1)
     {
         memset(buffer, 0, sizeof(buffer));
-        int bytesReceived = recvfrom(clientSock, buffer, BUFFER_SIZE_BYTES, 0, (struct sockaddr *)&threadArgs->serverAddr, &clientLen);
+        int bytesReceived = recvfrom(clientSocket, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&threadArgs->serverAddr, &clientLength);
         if (bytesReceived < 1)
             exit(-1);
         char buffer_copy[100];
@@ -247,15 +247,15 @@ void processBroadcastRESADD()
     char *aux = strtok(NULL, " ");
     if(aux == NULL)
         return;
-    equipmentId = atoi(aux);
+    eqID = atoi(aux);
     for(int i = 0; i < 15; i++)
     {
-        if(equipments[i] == equipmentId)
+        if(equipments[i] == eqID)
             return;
         if(equipments[i] == 0)
         {
-            equipments[i] = equipmentId;
-            printf("Equipment %d added\n", equipmentId);
+            equipments[i] = eqID;
+            printf("Equipment %d added\n", eqID);
             return;
         }
     }
@@ -266,13 +266,13 @@ void processBreadcastREQREM()
     char *aux = strtok(NULL, " ");
     if(aux == NULL)
         return;
-    equipmentId = atoi(aux);
+    eqID = atoi(aux);
     for(int i = 0; i < 15; i++)
     {
-        if(equipments[i] == equipmentId)
+        if(equipments[i] == eqID)
         {
             equipments[i] = 0;
-            printf("Equipment %d removed\n", equipmentId);
+            printf("Equipment %d removed\n", eqID);
             return;
         }
     }
@@ -293,12 +293,12 @@ void commandBroadcastSwitch(int messageType)
 
 void *readBroadcastThread(void *args)
 {
-    struct ThreadArgs *threadArgs = (struct ThreadArgs *)args;
-    char buffer[100] = "";
+    struct ThreadArguments *threadArgs = (struct ThreadArguments *)args;
+    char buffer[BUFFER_SIZE] = "";
     while(1)
     {
         memset(buffer, 0, sizeof(buffer));
-        int bytesReceived = recvfrom(clientBroadcastSock, buffer, BUFFER_SIZE_BYTES, 0, (struct sockaddr *)&threadArgs->serverAddr, &clientLen);
+        int bytesReceived = recvfrom(clientBroadcastSocket, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&threadArgs->serverAddr, &clientLength);
         if (bytesReceived < 1)
             exit(-1);
         char buffer_copy[100];
@@ -319,8 +319,8 @@ int main(int argc, char const *argv[])
     char *serverIP = strdup(argv[1]);
     char *serverPort = strdup(argv[2]);
     int serverPortNumber = atoi(serverPort);
-    clientSock = buildUDPunicast(0);
-    clientBroadcastSock = buildUDPunicast(7777);
+    clientSocket = buildUDPunicast(0);
+    clientBroadcastSocket = buildUDPunicast(7777);
 
     struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
@@ -337,7 +337,7 @@ int main(int argc, char const *argv[])
     
 
     pthread_t receiveThread;
-    struct ThreadArgs *receiveThreadArgs = (struct ThreadArgs *)malloc(sizeof(struct ThreadArgs));
+    struct ThreadArguments *receiveThreadArgs = (struct ThreadArguments *)malloc(sizeof(struct ThreadArguments));
     receiveThreadArgs->serverAddr = serverAddr;
     int receiveThreadStatus = pthread_create(&receiveThread, NULL, readThread, (void *)receiveThreadArgs);
     if (receiveThreadStatus != 0)
@@ -345,13 +345,13 @@ int main(int argc, char const *argv[])
 
     
     pthread_t receiveBroadcastThread;
-    struct ThreadArgs *receiveBroadcastThreadArgs = (struct ThreadArgs *)malloc(sizeof(struct ThreadArgs));
+    struct ThreadArguments *receiveBroadcastThreadArgs = (struct ThreadArguments *)malloc(sizeof(struct ThreadArguments));
     receiveBroadcastThreadArgs->serverAddr = broadcastServerAddr;
     int receiveBroadcastThreadStatus = pthread_create(&receiveBroadcastThread, NULL, readBroadcastThread, (void *)receiveBroadcastThreadArgs);
     if (receiveBroadcastThreadStatus != 0) exit(-1);
 
     pthread_t sendThread;
-    struct ThreadArgs *sendThreadArgs = (struct ThreadArgs *)malloc(sizeof(struct ThreadArgs));
+    struct ThreadArguments *sendThreadArgs = (struct ThreadArguments *)malloc(sizeof(struct ThreadArguments));
     sendThreadArgs->serverAddr = serverAddr;
     int sendThreadStatus = pthread_create(&sendThread, NULL, readInputThread, (void *)sendThreadArgs);
     if (sendThreadStatus != 0)

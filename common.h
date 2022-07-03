@@ -1,14 +1,7 @@
 #ifndef COMMON
 #define COMMON
 
-#define ADDR_LEN 16
-#define BUFFER_SIZE_BYTES 100
-#define MAX_CLIENTS 15
-
-#define SERVER_INPUT_ARGS 2
-#define SERVER_MAX_THREADS 15
-#define SERVER_MAX_PENDING 5
-
+#define BUFFER_SIZE 100
 
 #include <sys/socket.h>
 #include <netinet/in.h>
